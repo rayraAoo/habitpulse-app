@@ -1,50 +1,42 @@
 # ⚡ HabitPulse - Mobile Habit Tracker
 
-> Um aplicativo móvel moderno para rastreamento de hábitos e foco diário, construído com **React Native**, **TypeScript** e **Expo**.
+> Aplicativo móvel para rastreamento de hábitos e consistência diária, construído com **React Native**, **TypeScript** e **Expo**.
 
 ---
 
-## 📱 Funcionalidades
+## 📱 O que o app possui atualmente
 
-- **Controle de Hábitos:** Marque hábitos como concluídos e veja seu progresso em tempo real.
-- **Métricas Visuais:** Barra de progresso diário com cálculo dinâmico de porcentagem.
-- **Streaks de Foco:** Contagem de sequência de dias consistentes com cada hábito.
-- **Filtros por Categoria:** Navegue por categorias como Saúde, Produtividade, Mente e Estudos.
-- **Criação e Remoção:** Adicione novos hábitos com categorias personalizadas e remova tarefas concluídas.
-- **Interface Dark Mode:** Design minimalista e elegante inspirado em interfaces modernas.
+1. **Sistema Completo de Autenticação:**
+   - **Tela de Login:** Entrada com e-mail e senha, validação de campos e mensagens de erro.
+   - **Tela de Cadastro:** Criação de conta com Nome, E-mail e Senha.
+   - **Login de Demonstração / Visitante:** Acesso rápido com um clique (`Rayra` / `rayra@habitpulse.com`).
+   - **Gestão de Sessão e Logout:** Saudação personalizada no topo (`Olá, [Nome] 👋`), avatar com inicial e botão para deslogar.
+
+2. **Painel de Hábitos (Dashboard):**
+   - **Controle Diário:** Marque hábitos como concluídos e atualize o streak de dias seguidos automaticamente.
+   - **Métricas Visuais:** Barra de progresso com cálculo percentual dinâmico do dia.
+   - **Filtro por Categorias:** Filtre hábitos por *Saúde*, *Produtividade*, *Mente* e *Estudos*.
+   - **Criação de Novos Hábitos:** Modal para adicionar novos hábitos com categorias personalizadas.
+   - **Exclusão de Hábitos:** Botão direto para remover hábitos indesejados.
+
+3. **Simulador Visual Web:**
+   - Arquivo `preview.html` para visualização e teste imediato em qualquer navegador no formato de smartphone.
 
 ---
 
-## 🛠️ Tecnologias
+## 🚀 Como Visualizar e Testar
 
-- [React Native](https://reactnative.dev/)
-- [Expo](https://expo.dev/)
-- [TypeScript](https://www.typescriptlang.org/)
-
----
-
-## 🚀 Como Executar
-
-### Pré-requisitos
-- [Node.js](https://nodejs.org/) instalado
-- Aplicativo **Expo Go** instalado no celular ([iOS](https://apps.apple.com/app/expo-go/id982107779) / [Android](https://play.google.com/store/apps/details?id=host.exp.exponent))
-
-### Passos
-
-1. Clone o repositório:
-```bash
-git clone https://github.com/alicerayrasantos-ops/habitpulse-app.git
-cd habitpulse-app
+### 1. Visualização Imediata no Navegador
+Abra o arquivo [`preview.html`](file:///C:/Users/200024836/habitpulse/preview.html) com duplo clique ou pelo terminal:
+```powershell
+Start-Process "C:\Users\200024836\habitpulse\preview.html"
 ```
 
-2. Instale as dependências:
+### 2. Executando no Celular via Expo (React Native)
+Quando tiver Node.js instalado:
 ```bash
+cd C:\Users\200024836\habitpulse
 npm install
-```
-
-3. Inicie o projeto Expo:
-```bash
 npx expo start
 ```
-
-4. Escaneie o QR Code exibido no terminal com o app **Expo Go** ou câmera do seu celular.
+Escaneie o QR Code com o aplicativo **Expo Go** no Android ou iOS.
