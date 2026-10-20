@@ -1,10 +1,8 @@
-# ⚡ HabitPulse - Mobile Habit Tracker
+ HabitPulse - Mobile Habit Tracker
 
 > Aplicativo móvel para rastreamento de hábitos e consistência diária, construído com **React Native**, **TypeScript** e **Expo**.
 
----
-
-## 📱 O que o app possui atualmente
+--- O que o app possui atualmente
 
 1. **Sistema Completo de Autenticação:**
    - **Tela de Login:** Entrada com e-mail e senha, validação de campos e mensagens de erro.
