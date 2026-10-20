@@ -12,7 +12,14 @@ import {
   ScrollView,
   KeyboardAvoidingView,
   Platform,
+  Alert,
 } from 'react-native';
+
+// Tipagem de Usuário
+interface User {
+  name: string;
+  email: string;
+}
 
 // Tipagem dos Hábitos
 interface Habit {
@@ -38,19 +45,100 @@ const CATEGORY_COLORS: Record<string, string> = {
   Estudos: '#F59E0B',       // Âmbar
 };
 
-export default function App() {
-  const [habits, setHabits] = useState<Habit[]>([
-    { id: '1', title: 'Beber 2L de água', category: 'Saúde', streak: 12, completed: true },
-    { id: '2', title: 'Leitura técnica (20 min)', category: 'Estudos', streak: 5, completed: false },
-    { id: '3', title: 'Exercício físico', category: 'Saúde', streak: 8, completed: false },
-    { id: '4', title: 'Planejamento do dia', category: 'Produtividade', streak: 15, completed: true },
-    { id: '5', title: 'Meditação guiada', category: 'Mente', streak: 3, completed: false },
-  ]);
+// Dados Iniciais de Demonstração
+const INITIAL_HABITS: Habit[] = [
+  { id: '1', title: 'Beber 2L de água', category: 'Saúde', streak: 12, completed: true },
+  { id: '2', title: 'Leitura técnica (20 min)', category: 'Estudos', streak: 5, completed: false },
+  { id: '3', title: 'Exercício físico', category: 'Saúde', streak: 8, completed: false },
+  { id: '4', title: 'Planejamento do dia', category: 'Produtividade', streak: 15, completed: true },
+  { id: '5', title: 'Meditação guiada', category: 'Mente', streak: 3, completed: false },
+];
 
+export default function App() {
+  // Estado de Autenticação
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
+  
+  // Campos de Formulário de Autenticação
+  const [authName, setAuthName] = useState('');
+  const [authEmail, setAuthEmail] = useState('');
+  const [authPassword, setAuthPassword] = useState('');
+  const [authError, setAuthError] = useState('');
+
+  // Estados dos Hábitos
+  const [habits, setHabits] = useState<Habit[]>(INITIAL_HABITS);
   const [selectedCategory, setSelectedCategory] = useState<string>('Todos');
   const [modalVisible, setModalVisible] = useState<boolean>(false);
   const [newTitle, setNewTitle] = useState<string>('');
   const [newCategory, setNewCategory] = useState<'Saúde' | 'Produtividade' | 'Mente' | 'Estudos'>('Saúde');
+
+  // Função de Login
+  const handleLogin = () => {
+    setAuthError('');
+    if (!authEmail.trim() || !authPassword.trim()) {
+      setAuthError('Preencha seu e-mail e sua senha.');
+      return;
+    }
+    if (!authEmail.includes('@') || authEmail.length < 5) {
+      setAuthError('Informe um e-mail válido.');
+      return;
+    }
+    if (authPassword.length < 4) {
+      setAuthError('A senha deve ter no mínimo 4 caracteres.');
+      return;
+    }
+
+    // Sucesso no login
+    const userName = authEmail.split('@')[0];
+    const formattedName = userName.charAt(0).toUpperCase() + userName.slice(1);
+    setCurrentUser({
+      name: formattedName,
+      email: authEmail.trim(),
+    });
+    setAuthPassword('');
+  };
+
+  // Função de Cadastro
+  const handleRegister = () => {
+    setAuthError('');
+    if (!authName.trim()) {
+      setAuthError('Informe seu nome completo.');
+      return;
+    }
+    if (!authEmail.trim() || !authEmail.includes('@')) {
+      setAuthError('Informe um e-mail válido.');
+      return;
+    }
+    if (authPassword.length < 6) {
+      setAuthError('A senha precisa ter pelo menos 6 caracteres.');
+      return;
+    }
+
+    // Criar conta e logar automaticamente
+    setCurrentUser({
+      name: authName.trim(),
+      email: authEmail.trim(),
+    });
+    setAuthName('');
+    setAuthPassword('');
+  };
+
+  // Função de Logout
+  const handleLogout = () => {
+    setCurrentUser(null);
+    setAuthEmail('');
+    setAuthPassword('');
+    setAuthError('');
+  };
+
+  // Login Rápido de Demonstração
+  const handleDemoLogin = () => {
+    setAuthError('');
+    setCurrentUser({
+      name: 'Rayra',
+      email: 'rayra@habitpulse.com',
+    });
+  };
 
   // Alternar conclusão do hábito
   const toggleHabit = (id: string) => {
@@ -98,19 +186,168 @@ export default function App() {
     selectedCategory === 'Todos' ? true : h.category === selectedCategory
   );
 
+  // =========================================================================
+  // TELA DE AUTENTICAÇÃO (LOGIN / CADASTRO)
+  // =========================================================================
+  if (!currentUser) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <StatusBar barStyle="light-content" backgroundColor="#0F172A" />
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={styles.authContainer}
+        >
+          <ScrollView contentContainerStyle={styles.authScrollContent} showsVerticalScrollIndicator={false}>
+            {/* Logotipo / Marca */}
+            <View style={styles.brandContainer}>
+              <View style={styles.brandIconWrapper}>
+                <Text style={styles.brandIcon}>⚡</Text>
+              </View>
+              <Text style={styles.authBrandTitle}>HabitPulse</Text>
+              <Text style={styles.authBrandSubtitle}>Construa hábitos fortes, um dia de cada vez.</Text>
+            </View>
+
+            {/* Alternador Login / Cadastro */}
+            <View style={styles.tabContainer}>
+              <TouchableOpacity
+                style={[styles.tabButton, authMode === 'login' && styles.tabButtonActive]}
+                onPress={() => {
+                  setAuthMode('login');
+                  setAuthError('');
+                }}
+              >
+                <Text style={[styles.tabButtonText, authMode === 'login' && styles.tabButtonTextActive]}>
+                  Entrar
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.tabButton, authMode === 'register' && styles.tabButtonActive]}
+                onPress={() => {
+                  setAuthMode('register');
+                  setAuthError('');
+                }}
+              >
+                <Text style={[styles.tabButtonText, authMode === 'register' && styles.tabButtonTextActive]}>
+                  Criar Conta
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* Card de Formulário */}
+            <View style={styles.authCard}>
+              <Text style={styles.cardHeaderTitle}>
+                {authMode === 'login' ? 'Bem-vindo de volta!' : 'Comece sua jornada'}
+              </Text>
+              <Text style={styles.cardHeaderSubtitle}>
+                {authMode === 'login'
+                  ? 'Acesse seu painel diário de consistência.'
+                  : 'Crie seu perfil gratuito para rastrear sua rotina.'}
+              </Text>
+
+              {/* Mensagem de Erro */}
+              {authError ? (
+                <View style={styles.errorBox}>
+                  <Text style={styles.errorBoxText}>⚠️ {authError}</Text>
+                </View>
+              ) : null}
+
+              {/* Campo Nome (Apenas Cadastro) */}
+              {authMode === 'register' && (
+                <View style={styles.formGroup}>
+                  <Text style={styles.inputLabel}>Nome completo</Text>
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Ex: Rayra Oliveira"
+                    placeholderTextColor="#64748B"
+                    value={authName}
+                    onChangeText={setAuthName}
+                    autoCapitalize="words"
+                  />
+                </View>
+              )}
+
+              {/* Campo E-mail */}
+              <View style={styles.formGroup}>
+                <Text style={styles.inputLabel}>E-mail</Text>
+                <TextInput
+                  style={styles.input}
+                  placeholder="seu.email@exemplo.com"
+                  placeholderTextColor="#64748B"
+                  value={authEmail}
+                  onChangeText={setAuthEmail}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                />
+              </View>
+
+              {/* Campo Senha */}
+              <View style={styles.formGroup}>
+                <Text style={styles.inputLabel}>Senha</Text>
+                <TextInput
+                  style={styles.input}
+                  placeholder="••••••••"
+                  placeholderTextColor="#64748B"
+                  value={authPassword}
+                  onChangeText={setAuthPassword}
+                  secureTextEntry
+                />
+              </View>
+
+              {/* Botão Principal */}
+              <TouchableOpacity
+                style={styles.primaryAuthButton}
+                onPress={authMode === 'login' ? handleLogin : handleRegister}
+              >
+                <Text style={styles.primaryAuthButtonText}>
+                  {authMode === 'login' ? 'Entrar no HabitPulse' : 'Criar minha conta'}
+                </Text>
+              </TouchableOpacity>
+
+              {/* Botão de Demonstração Rápida */}
+              <TouchableOpacity style={styles.demoButton} onPress={handleDemoLogin}>
+                <Text style={styles.demoButtonText}>⚡ Entrar como Visitante / Demonstração</Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* Rodapé Seguro */}
+            <Text style={styles.authFooterNote}>
+              🔒 Seus hábitos e rotinas protegidos com privacidade.
+            </Text>
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </SafeAreaView>
+    );
+  }
+
+  // =========================================================================
+  // TELA PRINCIPAL (DASHBOARD COM USUÁRIO AUTENTICADO)
+  // =========================================================================
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#0F172A" />
 
-      {/* Cabeçalho */}
+      {/* Barra de Perfil e Ações do Cabeçalho */}
       <View style={styles.header}>
-        <View>
-          <Text style={styles.greeting}>Sua rotina hoje 👋</Text>
-          <Text style={styles.appName}>HabitPulse</Text>
+        <View style={styles.userSection}>
+          <View style={styles.avatarCircle}>
+            <Text style={styles.avatarInitial}>
+              {currentUser.name ? currentUser.name.charAt(0).toUpperCase() : 'U'}
+            </Text>
+          </View>
+          <View>
+            <Text style={styles.greeting}>Olá, {currentUser.name} 👋</Text>
+            <Text style={styles.appName}>HabitPulse</Text>
+          </View>
         </View>
-        <TouchableOpacity style={styles.addButton} onPress={() => setModalVisible(true)}>
-          <Text style={styles.addButtonText}>+ Novo</Text>
-        </TouchableOpacity>
+
+        <View style={styles.headerActions}>
+          <TouchableOpacity style={styles.addButton} onPress={() => setModalVisible(true)}>
+            <Text style={styles.addButtonText}>+ Novo</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+            <Text style={styles.logoutButtonText}>Sair</Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
       {/* Card de Progresso */}
@@ -153,6 +390,14 @@ export default function App() {
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
+        ListEmptyComponent={
+          <View style={styles.emptyContainer}>
+            <Text style={styles.emptyTitle}>Nenhum hábito encontrado</Text>
+            <Text style={styles.emptySubtitle}>
+              Toque no botão "+ Novo" acima para cadastrar seu primeiro hábito nesta categoria!
+            </Text>
+          </View>
+        }
         renderItem={({ item }) => (
           <View style={[styles.habitCard, item.completed && styles.habitCardCompleted]}>
             <TouchableOpacity
@@ -209,7 +454,7 @@ export default function App() {
             <Text style={styles.modalTitle}>Criar Novo Hábito</Text>
 
             <TextInput
-              style={styles.input}
+              style={styles.modalInput}
               placeholder="Ex: Ler 10 páginas de livro"
               placeholderTextColor="#64748B"
               value={newTitle}
@@ -251,7 +496,7 @@ export default function App() {
                 <Text style={styles.modalCancelButtonText}>Cancelar</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.modalSaveButton} onPress={handleAddHabit}>
-                <Text style={styles.modalSaveButtonText}>Salvar</Text>
+                <Text style={styles.modalSaveButtonText}>Salvar Hábito</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -266,6 +511,167 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#0F172A',
   },
+
+  // Estilos de Autenticação
+  authContainer: {
+    flex: 1,
+  },
+  authScrollContent: {
+    paddingHorizontal: 24,
+    paddingTop: 40,
+    paddingBottom: 30,
+    alignItems: 'center',
+  },
+  brandContainer: {
+    alignItems: 'center',
+    marginBottom: 28,
+  },
+  brandIconWrapper: {
+    width: 68,
+    height: 68,
+    borderRadius: 20,
+    backgroundColor: '#1E293B',
+    borderWidth: 1,
+    borderColor: '#3B82F6',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 12,
+    shadowColor: '#3B82F6',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  brandIcon: {
+    fontSize: 32,
+  },
+  authBrandTitle: {
+    fontSize: 28,
+    fontWeight: '800',
+    color: '#F8FAFC',
+    letterSpacing: 0.5,
+  },
+  authBrandSubtitle: {
+    fontSize: 14,
+    color: '#94A3B8',
+    textAlign: 'center',
+    marginTop: 6,
+  },
+  tabContainer: {
+    flexDirection: 'row',
+    backgroundColor: '#1E293B',
+    borderRadius: 12,
+    padding: 4,
+    marginBottom: 20,
+    width: '100%',
+    borderWidth: 1,
+    borderColor: '#334155',
+  },
+  tabButton: {
+    flex: 1,
+    paddingVertical: 10,
+    alignItems: 'center',
+    borderRadius: 8,
+  },
+  tabButtonActive: {
+    backgroundColor: '#3B82F6',
+  },
+  tabButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#94A3B8',
+  },
+  tabButtonTextActive: {
+    color: '#FFFFFF',
+  },
+  authCard: {
+    width: '100%',
+    backgroundColor: '#1E293B',
+    borderRadius: 18,
+    padding: 20,
+    borderWidth: 1,
+    borderColor: '#334155',
+  },
+  cardHeaderTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#F8FAFC',
+    marginBottom: 4,
+  },
+  cardHeaderSubtitle: {
+    fontSize: 13,
+    color: '#94A3B8',
+    marginBottom: 16,
+  },
+  errorBox: {
+    backgroundColor: '#451A1A',
+    borderColor: '#EF4444',
+    borderWidth: 1,
+    padding: 10,
+    borderRadius: 8,
+    marginBottom: 14,
+  },
+  errorBoxText: {
+    color: '#FCA5A5',
+    fontSize: 13,
+    fontWeight: '500',
+  },
+  formGroup: {
+    marginBottom: 14,
+  },
+  inputLabel: {
+    color: '#94A3B8',
+    fontSize: 13,
+    fontWeight: '600',
+    marginBottom: 6,
+  },
+  input: {
+    backgroundColor: '#0F172A',
+    borderRadius: 10,
+    padding: 12,
+    color: '#F8FAFC',
+    fontSize: 14,
+    borderWidth: 1,
+    borderColor: '#334155',
+  },
+  primaryAuthButton: {
+    backgroundColor: '#3B82F6',
+    borderRadius: 12,
+    paddingVertical: 14,
+    alignItems: 'center',
+    marginTop: 8,
+    shadowColor: '#3B82F6',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    elevation: 4,
+  },
+  primaryAuthButtonText: {
+    color: '#FFFFFF',
+    fontSize: 15,
+    fontWeight: '700',
+  },
+  demoButton: {
+    marginTop: 12,
+    paddingVertical: 10,
+    alignItems: 'center',
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#334155',
+  },
+  demoButtonText: {
+    color: '#38BDF8',
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  authFooterNote: {
+    color: '#64748B',
+    fontSize: 12,
+    marginTop: 20,
+    textAlign: 'center',
+  },
+
+  // Cabeçalho da Aplicação
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -274,27 +680,65 @@ const styles = StyleSheet.create({
     paddingTop: 15,
     paddingBottom: 10,
   },
+  userSection: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  avatarCircle: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#3B82F6',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  avatarInitial: {
+    color: '#FFFFFF',
+    fontSize: 18,
+    fontWeight: '700',
+  },
   greeting: {
     color: '#94A3B8',
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '500',
   },
   appName: {
     color: '#F8FAFC',
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: '800',
+  },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
   addButton: {
     backgroundColor: '#3B82F6',
     paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderRadius: 20,
+    paddingHorizontal: 14,
+    borderRadius: 18,
   },
   addButtonText: {
     color: '#FFFFFF',
     fontWeight: '700',
-    fontSize: 14,
+    fontSize: 13,
   },
+  logoutButton: {
+    backgroundColor: '#1E293B',
+    borderWidth: 1,
+    borderColor: '#475569',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 18,
+  },
+  logoutButtonText: {
+    color: '#EF4444',
+    fontWeight: '600',
+    fontSize: 13,
+  },
+
+  // Card de Progresso
   progressCard: {
     backgroundColor: '#1E293B',
     marginHorizontal: 20,
@@ -312,7 +756,7 @@ const styles = StyleSheet.create({
   },
   progressTitle: {
     color: '#F8FAFC',
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '600',
   },
   progressPercentText: {
@@ -336,6 +780,8 @@ const styles = StyleSheet.create({
     fontSize: 12,
     marginTop: 8,
   },
+
+  // Filtros de Categoria
   categoryContainer: {
     paddingVertical: 14,
     paddingLeft: 20,
@@ -361,6 +807,8 @@ const styles = StyleSheet.create({
   categoryChipTextActive: {
     color: '#FFFFFF',
   },
+
+  // Lista de Hábitos
   listContent: {
     paddingHorizontal: 20,
     paddingBottom: 40,
@@ -444,6 +892,25 @@ const styles = StyleSheet.create({
     color: '#64748B',
     fontSize: 14,
   },
+  emptyContainer: {
+    padding: 30,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  emptyTitle: {
+    color: '#F8FAFC',
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 6,
+  },
+  emptySubtitle: {
+    color: '#64748B',
+    fontSize: 13,
+    textAlign: 'center',
+    lineHeight: 18,
+  },
+
+  // Modal Novo Hábito
   modalOverlay: {
     flex: 1,
     justifyContent: 'flex-end',
@@ -463,7 +930,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     marginBottom: 16,
   },
-  input: {
+  modalInput: {
     backgroundColor: '#0F172A',
     borderRadius: 12,
     padding: 14,
@@ -472,12 +939,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#334155',
     marginBottom: 16,
-  },
-  inputLabel: {
-    color: '#94A3B8',
-    fontSize: 13,
-    fontWeight: '600',
-    marginBottom: 8,
   },
   modalCategoriesRow: {
     flexDirection: 'row',
